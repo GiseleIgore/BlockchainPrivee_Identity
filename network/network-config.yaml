@@ -1,0 +1,103 @@
+---
+
+name: 'balance-transfer'
+
+
+x-type: 'hlfv1'
+
+
+description: 'For transferring amount from Issuer account to Beneficiary account'
+
+
+version: '1.0'
+
+
+channels:
+  # nom du channel
+  irs:
+    
+    orderers:
+      - orderer.example.com
+
+    # Obligatoire. liste des peers des orgs participants
+    peers:
+      partya.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+      partyb.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+    
+    chaincodes:
+      # nomenclature exigée par Fabric
+      - irscc:v0
+
+#
+# liste des organisations participant à ce réseau
+#
+organizations:
+  partya:
+    mspid: partya
+    peers:
+      - partya.example.com
+   
+  partyb:
+    mspid: partyb
+    peers:
+      - partyb.example.com
+    
+
+orderers:
+  orderer.example.com:
+    url: grpc://localhost:7050
+
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+
+    
+#
+# Liste des peers qui feront des requêtes et autres 
+#
+peers:
+  partya.example.com:
+    url: grpc://localhost:7051
+    grpcOptions:
+      ssl-target-name-override: partya.example.com
+     
+  partyb.example.com:
+    url: grpc://localhost:7051
+    grpcOptions:
+      ssl-target-name-override: partyb.example.com
+     
+#
+# Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
+# certificate management to be done via REST APIs. Application may choose to use a standard
+# Certificate Authority instead of Fabric-CA, in which case this section would not be specified.
+#
+certificateAuthorities:
+  ca-partya:
+    url: http://ca-partya:7054
+    httpOptions:
+      verify: false
+    
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw
+    
+    caName: ca-partya
+
+  ca-partyb:
+    url: http://ca-partyb:7054
+    httpOptions:
+      verify: false
+    
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw
+    caName: ca-partyb
