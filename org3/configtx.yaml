@@ -1,0 +1,250 @@
+---
+    ################################################################################
+    #
+    #   Section: Organisations
+    #
+    #   - Definition de l'identité des organisations.
+    #
+    ################################################################################
+    Organizations:
+    
+        
+        - &orderer
+            
+            Name: orderer
+    
+            ID: orderer
+    
+            # MSPDir : dossier contenant la configuration du MSP
+            MSPDir: crypto-config/ordererOrganizations/example.com/msp
+    
+            
+            Policies:
+                Readers:
+                    Type: Signature
+                    Rule: "OR('orderer.member')"
+                Writers:
+                    Type: Signature
+                    Rule: "OR('orderer.member')"
+                Admins:
+                    Type: Signature
+                    Rule: "OR('orderer.admin')"
+      - &partya
+             
+            Name: partya
+     
+            ID: partya
+    
+            MSPDir: crypto-config/peerOrganizations/partya.example.com/msp
+     
+            Policies:
+                Readers:
+                    Type: Signature
+                    Rule: "OR('partya.member')"
+                Writers:
+                    Type: Signature
+                    Rule: "OR('partya.member')"
+                Admins:
+                    Type: Signature
+                    Rule: "OR('partya.admin')"
+    
+            AnchorPeers: 
+                - Host: irs-partya
+                  Port: 7051
+                  
+        - &partyb
+             
+            Name: partyb
+     
+            ID: partyb
+    
+            MSPDir: crypto-config/peerOrganizations/partyb.example.com/msp
+     
+            Policies:
+                Readers:
+                    Type: Signature
+                    Rule: "OR('partyb.member')"
+                Writers:
+                    Type: Signature
+                    Rule: "OR('partyb.member')"
+                Admins:
+                    Type: Signature
+                    Rule: "OR('partyb.admin')"
+    
+            AnchorPeers: 
+                - Host: irs-partyb
+                  Port: 7051
+    
+        - &partyc
+             
+            Name: partyc
+     
+            ID: partyc
+    
+            MSPDir: crypto-config/peerOrganizations/partyc.example.com/msp
+     
+            Policies:
+                Readers:
+                    Type: Signature
+                    Rule: "OR('partyc.member')"
+                Writers:
+                    Type: Signature
+                    Rule: "OR('partyc.member')"
+                Admins:
+                    Type: Signature
+                    Rule: "OR('partyc.admin')"
+    
+            AnchorPeers: 
+                - Host: irs-partyc
+                  Port: 7051
+    
+
+    Capabilities:
+        Channel: &ChannelCapabilities
+            
+            V1_4_3: true
+             
+            V1_3: false
+             
+            V1_1: false
+    
+       
+        Orderer: &OrdererCapabilities
+            
+            V1_4_2: true
+             
+            V1_1: false
+    
+         
+        Application: &ApplicationCapabilities
+             
+            V1_4_2: true
+             
+            V1_3: false
+             
+            V1_2: false
+             
+            V1_1: false
+    
+    ################################################################################
+    #
+    #   SECTION: Application
+    #
+    ################################################################################
+    Application: &ApplicationDefaults
+    
+        
+        Organizations:
+           
+        Policies:
+            Readers:
+                Type: ImplicitMeta
+                Rule: "ANY Readers"
+            Writers:
+                Type: ImplicitMeta
+                Rule: "ANY Writers"
+            Admins:
+                Type: ImplicitMeta
+                Rule: "MAJORITY Admins"
+    
+        Capabilities:
+            <<: *ApplicationCapabilities
+    ################################################################################
+    #
+    #   SECTION: Orderer
+    #
+    #
+    ################################################################################
+    Orderer: &OrdererDefaults
+    
+        
+        OrdererType: solo
+    
+        Addresses:
+            - irs-orderer:7050
+    
+        BatchTimeout: 2s
+    
+        BatchSize:
+    
+            MaxMessageCount: 10
+    
+            AbsoluteMaxBytes: 99 MB
+    
+            PreferredMaxBytes: 512 KB
+    
+        Kafka:
+            Brokers:
+                - 127.0.0.1:9092
+    
+        Organizations:
+    
+        Policies:
+            Readers:
+                Type: ImplicitMeta
+                Rule: "ANY Readers"
+            Writers:
+                Type: ImplicitMeta
+                Rule: "ANY Writers"
+            Admins:
+                Type: ImplicitMeta
+                Rule: "MAJORITY Admins"
+            BlockValidation:
+                Type: ImplicitMeta
+                Rule: "ANY Writers"
+    
+    ################################################################################
+    #
+    #   CHANNEL
+    #
+    ################################################################################
+    Channel: &ChannelDefaults 
+        Policies:
+            Readers:
+                Type: ImplicitMeta
+                Rule: "ANY Readers"
+            Writers:
+                Type: ImplicitMeta
+                Rule: "ANY Writers"
+            Admins:
+                Type: ImplicitMeta
+                Rule: "MAJORITY Admins"
+    
+           
+        Capabilities:
+            <<: *ChannelCapabilities
+    
+    ################################################################################
+    #
+    #   Profile
+    #
+    ################################################################################
+    Profiles:
+    
+        IRSNetGenesis:
+            <<: *ChannelDefaults
+            Orderer:
+                <<: *OrdererDefaults
+                Organizations:
+                    - *orderer
+                Capabilities:
+                    <<: *OrdererCapabilities
+            Consortiums:
+                SampleConsortium:
+                    Organizations:
+                        - *partya
+                        - *partyb
+                        - *partyc
+        IRSChannel:
+            Consortium: SampleConsortium
+            <<: *ChannelDefaults
+            Application:
+                <<: *ApplicationDefaults
+                Organizations:
+                        - *partya
+                        - *partyb
+                        - *partyc
+                Capabilities:
+                    <<: *ApplicationCapabilities
+    
+    
